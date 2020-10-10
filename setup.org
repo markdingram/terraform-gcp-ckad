@@ -1,0 +1,69 @@
+
+* GCP K8S setup notes
+
+#+PROPERTY: header-args:sh :shebang #!/bin/bash -i :results output
+
+Notes on GCP setup of a K8S cluster:
+
+- setup gcloud via docker container:
+  https://adilsoncarvalho.com/using-gcloud-in-a-docker-container-dd5f9eea5bbc
+
+  #+BEGIN_SRC shell :results output
+  docker run --rm --volumes-from gcloud-config \
+    google/cloud-sdk \
+    gcloud info
+  #+END_SRC
+
+  Set Alias:
+
+  alias gcloud="docker run --rm --volumes-from gcloud-config google/cloud-sdk gcloud"
+
+
+  #+BEGIN_SRC sh
+  gcloud projects list
+  #+END_SRC
+
+  #+RESULTS:
+  : .bashrc
+  : PROJECT_ID            NAME                  PROJECT_NUMBER
+  : mac-mini-backup-data  Mac Mini Backup Data  39782951328
+
+
+  Add new projects (project id must be globally unique):
+
+  #+BEGIN_SRC sh
+  gcloud projects create ckad-cluster-mdi --name ckad-cluster
+  #+END_SRC
+
+  #+RESULTS:
+  : .bashrc
+
+  #+BEGIN_SRC sh
+  gcloud config set core/project ckad-cluster-mdi
+  #+END_SRC
+
+  #+RESULTS:
+  : .bashrc
+
+
+  Create Terraform service account and add permisions:
+  $ export GCP_PROJECT=ckad-cluster-mdi
+  $ export TF_CREDS=~/.config/gcloud/terraform-admin.json
+
+  $ gcloud iam service-accounts create terraform --display-name "Terraform admin account"
+  $ gcloud iam service-accounts keys create ${TF_CREDS}   --iam-account terraform@${GCP_PROJECT}.iam.gserviceaccount.com
+
+  created key [790657e3b40f30628ddaf594398eb8f737a90d2c] of type [json] as [/home/mark/.config/gcloud/terraform-admin.json] for [terraform@ckad-cluster-mdi.iam.gserviceaccount.com]
+
+  $ gcloud projects add-iam-policy-binding ${GCP_PROJECT} --member serviceAccount:terraform@${GCP_PROJECT}.iam.gserviceaccount.com --role=roles/viewer
+
+  Updated IAM policy for project [ckad-cluster-mdi].
+  bindings:
+  - members:
+    - user:markdingram@gmail.com
+    role: roles/owner
+  - members:
+    - serviceAccount:terraform@ckad-cluster-mdi.iam.gserviceaccount.com
+    role: roles/viewer
+  etag: BwWxUARu3lQ=
+  version: 1
