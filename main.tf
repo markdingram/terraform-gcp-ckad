@@ -5,6 +5,7 @@ provider "google" {
 
 resource "google_container_cluster" "primary" {
   name     = "ckad-cluster-mdi"
+  location = "europe-west1-a"
 
   # We can't create a cluster with no node pool defined, but we want to only use
   # separately managed node pools. So we create the smallest possible default
@@ -25,11 +26,13 @@ resource "google_container_cluster" "primary" {
 resource "google_container_node_pool" "primary_preemptible_nodes" {
   name       = "ckad-cluster-mdi-node-pool"
   cluster    = google_container_cluster.primary.name
+  location   = "europe-west1-a"
+
   node_count = 1
 
   node_config {
     preemptible  = true
-    machine_type = "e2-medium"
+    machine_type = "e2-micro"
 
     metadata = {
       disable-legacy-endpoints = "true"

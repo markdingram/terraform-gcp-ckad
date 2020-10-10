@@ -48,10 +48,12 @@ Notes on GCP setup of a K8S cluster:
 
   Create Terraform service account and add permisions:
   $ export GCP_PROJECT=ckad-cluster-mdi
-  $ export TF_CREDS=~/.config/gcloud/terraform-admin.json
+  $ export TF_CREDS=/root/.config/gcloud/terraform.json # this is within the gcloud-config container
+  $ docker cp gcloud-config:/root/.config/gcloud/terraform.json .
+  $ cat terraform.json | jq -c '.' # copy into Terraform Cloud environment variable "GOOGLE_CLOUD_KEYFILE_JSON"
 
   $ gcloud iam service-accounts create terraform --display-name "Terraform admin account"
-  $ gcloud iam service-accounts keys create ${TF_CREDS}   --iam-account terraform@${GCP_PROJECT}.iam.gserviceaccount.com
+  $ gcloud iam service-accounts keys create ${TF_CREDS} --iam-account terraform@${GCP_PROJECT}.iam.gserviceaccount.com
 
   created key [790657e3b40f30628ddaf594398eb8f737a90d2c] of type [json] as [/home/mark/.config/gcloud/terraform-admin.json] for [terraform@ckad-cluster-mdi.iam.gserviceaccount.com]
 
@@ -67,3 +69,5 @@ Notes on GCP setup of a K8S cluster:
     role: roles/viewer
   etag: BwWxUARu3lQ=
   version: 1
+
+also add: roles/container.admin
